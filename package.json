@@ -1,0 +1,15 @@
+{
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "preview:frontend": "npm --prefix frontend run preview",
+    "dev:backend": "npm --prefix backend run start:dev",
+    "build:backend": "npm --prefix backend run build",
+    "install:all": "npm install"
+  }
+}
