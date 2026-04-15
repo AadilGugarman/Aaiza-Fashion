@@ -16,7 +16,8 @@ import {
 
 export const ProductList: React.FC<{
   setSelectedProduct: (id: string) => void;
-}> = ({ setSelectedProduct }) => {
+  isWishlistMode?: boolean;
+}> = ({ setSelectedProduct, isWishlistMode = false }) => {
   const { products, categories, addToCart, wishlist, toggleWishlist } =
     useApp();
   const { showToast } = useToast();
@@ -28,10 +29,13 @@ export const ProductList: React.FC<{
     "price-asc" | "price-desc" | "rating" | "newest"
   >("newest");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [showWishlistOnly, setShowWishlistOnly] = useState(false);
+  const [showWishlistOnlyState, setShowWishlistOnlyState] = useState(false);
+  const showWishlistOnly = isWishlistMode || showWishlistOnlyState;
   const [currentPage, setCurrentPage] = useState(1);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
   const itemsPerPage = 8;
+
+  const productsRef = React.useRef<HTMLDivElement>(null);
 
   const filteredProducts = useMemo(() => {
     let result = products
@@ -73,6 +77,16 @@ export const ProductList: React.FC<{
     setCurrentPage(1);
   }, [selectedCat, priceRange, sortBy, search, showWishlistOnly]);
 
+  // Scroll to top when page changes
+  React.useEffect(() => {
+    if (productsRef.current) {
+      productsRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [currentPage]);
+
   const handleAddToCart = (prod: (typeof products)[0]) => {
     addToCart(prod);
     showToast(`${prod.name} added to cart!`, "success");
@@ -86,7 +100,7 @@ export const ProductList: React.FC<{
           onClick={() => {
             setSelectedCat("All");
             setPriceRange(50000);
-            setShowWishlistOnly(false);
+            if (!isWishlistMode) setShowWishlistOnlyState(false);
             setSearch("");
           }}
           className="text-xs text-brand-600 hover:text-brand-700 font-semibold"
@@ -138,21 +152,23 @@ export const ProductList: React.FC<{
       </div>
 
       {/* Wishlist Toggle */}
-      <div>
-        <button
-          onClick={() => setShowWishlistOnly(!showWishlistOnly)}
-          className={`w-full px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
-            showWishlistOnly
-              ? "bg-rose-50 text-rose-700 border border-rose-200"
-              : "bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100"
-          }`}
-        >
-          <Heart
-            className={`w-4 h-4 ${showWishlistOnly ? "fill-current" : ""}`}
-          />
-          {showWishlistOnly ? "Showing Wishlist" : "Show Wishlist Only"}
-        </button>
-      </div>
+      {!isWishlistMode && (
+        <div>
+          <button
+            onClick={() => setShowWishlistOnlyState(!showWishlistOnlyState)}
+            className={`w-full px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
+              showWishlistOnly
+                ? "bg-rose-50 text-rose-700 border border-rose-200"
+                : "bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100"
+            }`}
+          >
+            <Heart
+              className={`w-4 h-4 ${showWishlistOnly ? "fill-current" : ""}`}
+            />
+            {showWishlistOnly ? "Showing Wishlist" : "Show Wishlist Only"}
+          </button>
+        </div>
+      )}
     </div>
   );
 
@@ -239,27 +255,31 @@ export const ProductList: React.FC<{
         </div>
 
         {/* Products */}
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3" ref={productsRef}>
           {filteredProducts.length === 0 ? (
             <div className="text-center py-20 bg-white rounded-xl border border-slate-200">
               <p className="text-slate-500 text-lg mb-2">
-                No products match your filters
+                {showWishlistOnly
+                  ? "Your wishlist is empty"
+                  : "No products match your filters"}
               </p>
-              <button
-                onClick={() => {
-                  setSelectedCat("All");
-                  setPriceRange(50000);
-                  setSearch("");
-                  setShowWishlistOnly(false);
-                }}
-                className="text-brand-600 font-semibold hover:underline"
-              >
-                Clear all filters
-              </button>
+              {!showWishlistOnly && (
+                <button
+                  onClick={() => {
+                    setSelectedCat("All");
+                    setPriceRange(50000);
+                    setSearch("");
+                    setShowWishlistOnlyState(false);
+                  }}
+                  className="text-brand-600 font-semibold hover:underline"
+                >
+                  Clear all filters
+                </button>
+              )}
             </div>
           ) : viewMode === "grid" ? (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-6">
                 {paginatedProducts.map((prod) => {
                   const inWishlist = wishlist.includes(prod._id);
                   return (

@@ -31,8 +31,8 @@ export const Home: React.FC<HomeProps> = ({
   const { products, categories, addToCart, wishlist, toggleWishlist } =
     useApp();
 
-  const newArrivals = products.filter((p) => p.isNew).slice(0, 4);
-  const bestsellers = products.filter((p) => p.isBestseller).slice(0, 4);
+  const newArrivals = products.filter((p) => p.isNew).slice(0, 6);
+  const bestsellers = products.filter((p) => p.isBestseller).slice(0, 6);
 
   const renderProductCard = (prod: (typeof products)[0]) => {
     const inWishlist = wishlist.includes(prod._id);
@@ -262,7 +262,7 @@ export const Home: React.FC<HomeProps> = ({
             View All <ArrowRight className="w-4 h-4" />
           </button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
           {bestsellers.map(renderProductCard)}
         </div>
       </div>
@@ -287,7 +287,7 @@ export const Home: React.FC<HomeProps> = ({
                 View All <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
               {newArrivals.map(renderProductCard)}
             </div>
           </div>

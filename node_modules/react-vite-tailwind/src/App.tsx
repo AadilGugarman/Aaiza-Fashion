@@ -40,8 +40,14 @@ const AppContent: React.FC = () => {
           />
         );
       case "products":
-      case "wishlist":
         return <ProductList setSelectedProduct={setSelectedProduct} />;
+      case "wishlist":
+        return (
+          <ProductList
+            setSelectedProduct={setSelectedProduct}
+            isWishlistMode={true}
+          />
+        );
       case "cart":
         return <Cart setCurrentTab={setCurrentTab} />;
       case "checkout":
