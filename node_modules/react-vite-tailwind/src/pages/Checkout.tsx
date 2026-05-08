@@ -215,35 +215,41 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
   // ── Order Success ──
   if (orderId) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center px-4 py-16 animate-fade-in">
+      <div className="min-h-[80vh] flex items-center justify-center px-4 py-16 animate-fade-in bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:bg-slate-950 transition-colors">
         <div className="max-w-lg w-full text-center">
-          <div className="w-20 h-20 bg-emerald-50 border border-emerald-200 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/10">
-            <CheckCircle2 className="w-10 h-10 text-emerald-500" />
+          <div className="w-20 h-20 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-900/50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/10 dark:shadow-emerald-900/20">
+            <CheckCircle2 className="w-10 h-10 text-emerald-500 dark:text-emerald-400" />
           </div>
-          <h2 className="text-3xl font-bold text-slate-900 mb-2">
+          <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
             Order Confirmed!
           </h2>
-          <p className="text-slate-500 mb-8 max-w-sm mx-auto">
+          <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-sm mx-auto">
             Thank you for shopping with Aaiza Fashion. Your order has been
             received and is being processed.
           </p>
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 text-left mb-8 shadow-sm">
-            <div className="flex justify-between text-sm mb-3 pb-3 border-b border-slate-100">
-              <span className="text-slate-500">Order Number</span>
-              <span className="text-slate-900 font-mono font-semibold">
+          <div className="bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 rounded-2xl p-6 text-left mb-8 shadow-sm transition-colors">
+            <div className="flex justify-between text-sm mb-3 pb-3 border-b border-slate-200 dark:border-slate-700">
+              <span className="text-slate-500 dark:text-slate-400">
+                Order Number
+              </span>
+              <span className="text-slate-900 dark:text-white font-mono font-semibold">
                 {orderId}
               </span>
             </div>
-            <div className="flex justify-between text-sm mb-3 pb-3 border-b border-slate-100">
-              <span className="text-slate-500">Payment</span>
-              <span className="text-emerald-600 font-semibold flex items-center gap-1">
+            <div className="flex justify-between text-sm mb-3 pb-3 border-b border-slate-200 dark:border-slate-700">
+              <span className="text-slate-500 dark:text-slate-400">
+                Payment
+              </span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5" /> Paid
               </span>
             </div>
-            <div className="flex justify-between text-sm mb-3 pb-3 border-b border-slate-100">
-              <span className="text-slate-500">Estimated Delivery</span>
-              <span className="text-slate-900 font-medium">
+            <div className="flex justify-between text-sm mb-3 pb-3 border-b border-slate-200 dark:border-slate-700">
+              <span className="text-slate-500 dark:text-slate-400">
+                Estimated Delivery
+              </span>
+              <span className="text-slate-900 dark:text-white font-medium">
                 {new Date(Date.now() + 86400000 * 7).toLocaleDateString(
                   "en-US",
                   { weekday: "short", month: "short", day: "numeric" },
@@ -251,8 +257,10 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
               </span>
             </div>
             <div className="flex justify-between items-baseline">
-              <span className="text-slate-500">Total Amount</span>
-              <span className="text-2xl font-bold text-brand-600">
+              <span className="text-slate-500 dark:text-slate-400">
+                Total Amount
+              </span>
+              <span className="text-2xl font-bold text-brand-600 dark:text-brand-400">
                 ₹{total.toFixed(2)}
               </span>
             </div>
@@ -275,7 +283,7 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
                 setCurrentTab("profile");
                 window.scrollTo(0, 0);
               }}
-              className="px-6 py-3 bg-white border border-slate-200 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all"
+              className="px-6 py-3 bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 font-semibold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
             >
               View Order Status
             </button>
@@ -287,7 +295,7 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
 
   // ── Checkout Form ──
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 animate-fade-in">
+    <div className="max-w-7xl mx-auto px-4 py-8 animate-fade-in bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:bg-slate-950 transition-colors min-h-screen">
       {/* Back Link */}
       <button
         onClick={() => {
@@ -346,14 +354,15 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
         {/* Form Area */}
         <div className="lg:col-span-3">
           {step === "shipping" && (
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm animate-fade-in-up">
-              <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-                <Truck className="w-5 h-5 text-brand-500" /> Shipping Details
+            <div className="bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 rounded-2xl p-6 sm:p-8 shadow-sm animate-fade-in-up transition-colors">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                <Truck className="w-5 h-5 text-brand-500 dark:text-brand-400" />{" "}
+                Shipping Details
               </h2>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="col-span-2">
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                       Full Name
                     </label>
                     <input
@@ -362,12 +371,12 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
                       onChange={(e) =>
                         setForm({ ...form, fullName: e.target.value })
                       }
-                      className={`w-full px-4 py-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-none transition-all ${errors.fullName ? "border-rose-400 focus:border-rose-500" : "border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100"}`}
+                      className={`w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-100/50 dark:border-slate-600 rounded-xl text-sm text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none transition-all ${errors.fullName ? "border-rose-400/50 dark:border-rose-600/50 focus:border-rose-500/50" : "focus:border-brand-500/50 focus:ring-2 focus:ring-brand-200/50 dark:focus:ring-brand-900/30"}`}
                       placeholder="Ayesha Khan"
                     />
                   </div>
                   <div className="col-span-2 sm:col-span-1">
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                       Email
                     </label>
                     <input
@@ -376,12 +385,12 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
                       onChange={(e) =>
                         setForm({ ...form, email: e.target.value })
                       }
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+                      className="w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-100/50 dark:border-slate-600 rounded-xl text-sm text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:border-brand-500/50 focus:ring-2 focus:ring-brand-200/50 dark:focus:ring-brand-900/30 transition-all"
                       placeholder="you@email.com"
                     />
                   </div>
                   <div className="col-span-2 sm:col-span-1">
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                       Phone
                     </label>
                     <input
@@ -390,12 +399,12 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
                       onChange={(e) =>
                         setForm({ ...form, phone: e.target.value })
                       }
-                      className={`w-full px-4 py-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-none transition-all ${errors.phone ? "border-rose-400" : "border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100"}`}
+                      className={`w-full px-4 py-2.5 bg-white dark:bg-slate-700 border border-slate-100/50 rounded-xl text-sm text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none transition-all ${errors.phone ? "border-rose-400/50 dark:border-rose-600/50 focus:border-rose-500/50" : "dark:border-slate-600 focus:border-brand-500/50 focus:ring-2 focus:ring-brand-200/50 dark:focus:ring-brand-900/30"}`}
                       placeholder="+1 (555) 000-0000"
                     />
                   </div>
                   <div className="col-span-2">
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                       Street Address
                     </label>
                     <input
@@ -404,12 +413,12 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
                       onChange={(e) =>
                         setForm({ ...form, address: e.target.value })
                       }
-                      className={`w-full px-4 py-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-none transition-all ${errors.address ? "border-rose-400" : "border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100"}`}
+                      className={`w-full px-4 py-2.5 bg-white dark:bg-slate-700 border-2 rounded-xl text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none transition-all ${errors.address ? "border-rose-400 dark:border-rose-600 focus:border-rose-500" : "border-slate-300 dark:border-slate-600 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:focus:ring-brand-900/50"}`}
                       placeholder="123 Fashion Ave, Suite 100"
                     />
                   </div>
                   <div className="col-span-2 sm:col-span-1">
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
+                    <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                       City
                     </label>
                     <input
@@ -418,13 +427,13 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
                       onChange={(e) =>
                         setForm({ ...form, city: e.target.value })
                       }
-                      className={`w-full px-4 py-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-none transition-all ${errors.city ? "border-rose-400" : "border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100"}`}
+                      className={`w-full px-4 py-2.5 bg-white dark:bg-slate-700 border-2 rounded-xl text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none transition-all ${errors.city ? "border-rose-400 dark:border-rose-600 focus:border-rose-500" : "border-slate-300 dark:border-slate-600 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:focus:ring-brand-900/50"}`}
                       placeholder="London"
                     />
                   </div>
                   <div className="col-span-2 sm:col-span-1 flex gap-4">
                     <div className="flex-1">
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                         Postal Code
                       </label>
                       <input
@@ -433,12 +442,12 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
                         onChange={(e) =>
                           setForm({ ...form, postalCode: e.target.value })
                         }
-                        className={`w-full px-4 py-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-none transition-all ${errors.postalCode ? "border-rose-400" : "border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100"}`}
+                        className={`w-full px-4 py-2.5 bg-white dark:bg-slate-700 border-2 rounded-xl text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none transition-all ${errors.postalCode ? "border-rose-400 dark:border-rose-600 focus:border-rose-500" : "border-slate-300 dark:border-slate-600 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:focus:ring-brand-900/50"}`}
                         placeholder="SW1A 1AA"
                       />
                     </div>
                     <div className="flex-1">
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                         Country
                       </label>
                       <input
@@ -447,7 +456,7 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
                         onChange={(e) =>
                           setForm({ ...form, country: e.target.value })
                         }
-                        className={`w-full px-4 py-2.5 bg-slate-50 border rounded-xl text-sm focus:outline-none transition-all ${errors.country ? "border-rose-400" : "border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100"}`}
+                        className={`w-full px-4 py-2.5 bg-white dark:bg-slate-700 border-2 rounded-xl text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none transition-all ${errors.country ? "border-rose-400 dark:border-rose-600 focus:border-rose-500" : "border-slate-300 dark:border-slate-600 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:focus:ring-brand-900/50"}`}
                         placeholder="UK"
                       />
                     </div>
@@ -464,20 +473,20 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
           )}
 
           {step === "payment" && (
-            <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm animate-fade-in-up">
+            <div className="bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 rounded-2xl p-6 sm:p-8 shadow-sm animate-fade-in-up transition-colors">
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-brand-500" /> Payment
-                  Method
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-brand-500 dark:text-brand-400" />{" "}
+                  Payment Method
                 </h2>
-                <span className="flex items-center gap-1 text-[10px] bg-brand-50 text-brand-700 border border-brand-200 px-2 py-0.5 rounded-full font-semibold uppercase">
+                <span className="flex items-center gap-1 text-[10px] bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 border border-brand-200 dark:border-brand-900/50 px-2 py-0.5 rounded-full font-semibold uppercase">
                   <Lock className="w-3 h-3" /> Secure
                 </span>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-3">
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">
                     Select Payment Method
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -486,10 +495,10 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
                       return (
                         <label
                           key={method.id}
-                          className={`flex items-center gap-3 p-4 border rounded-xl cursor-pointer transition-all ${
+                          className={`flex items-center gap-3 p-4 border-2 rounded-xl cursor-pointer transition-all ${
                             paymentMethod === method.id
-                              ? "border-brand-400 bg-brand-50"
-                              : "border-slate-200 hover:border-slate-300"
+                              ? "border-brand-400 dark:border-brand-600 bg-brand-50 dark:bg-brand-900/20"
+                              : "border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600"
                           }`}
                         >
                           <input
@@ -498,10 +507,10 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
                             value={method.id}
                             checked={paymentMethod === method.id}
                             onChange={(e) => setPaymentMethod(e.target.value)}
-                            className="text-brand-600 focus:ring-brand-500"
+                            className="text-brand-600 dark:text-brand-400 focus:ring-brand-500"
                           />
-                          <Icon className="w-5 h-5 text-slate-600" />
-                          <span className="text-sm font-medium text-slate-700">
+                          <Icon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
                             {method.label}
                           </span>
                         </label>
@@ -511,9 +520,9 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
                 </div>
 
                 {paymentMethod === "card" && (
-                  <div className="space-y-4 pt-4 border-t border-slate-100">
+                  <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-700">
                     <div>
-                      <label className="block text-xs font-semibold text-slate-600 mb-1">
+                      <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                         Card Number
                       </label>
                       <input
@@ -525,12 +534,12 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
                         }}
                         placeholder="4242 4242 4242 4242"
                         maxLength={19}
-                        className={`w-full px-4 py-2.5 bg-slate-50 border rounded-xl text-sm font-mono focus:outline-none transition-all ${errors.cardNum ? "border-rose-400" : "border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100"}`}
+                        className={`w-full px-4 py-2.5 bg-white dark:bg-slate-700 border-2 rounded-xl text-sm font-mono text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none transition-all ${errors.cardNum ? "border-rose-400 dark:border-rose-600" : "border-slate-300 dark:border-slate-600 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:focus:ring-brand-900/50"}`}
                       />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">
+                        <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                           Expiry Date
                         </label>
                         <input
@@ -541,11 +550,11 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
                           }
                           placeholder="MM/YY"
                           maxLength={5}
-                          className={`w-full px-4 py-2.5 bg-slate-50 border rounded-xl text-sm font-mono focus:outline-none transition-all ${errors.expDate ? "border-rose-400" : "border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100"}`}
+                          className={`w-full px-4 py-2.5 bg-white dark:bg-slate-700 border-2 rounded-xl text-sm font-mono text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none transition-all ${errors.expDate ? "border-rose-400 dark:border-rose-600" : "border-slate-300 dark:border-slate-600 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:focus:ring-brand-900/50"}`}
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-semibold text-slate-600 mb-1">
+                        <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">
                           CVV
                         </label>
                         <input
@@ -559,15 +568,15 @@ export const Checkout: React.FC<{ setCurrentTab: (t: string) => void }> = ({
                           }
                           placeholder="123"
                           maxLength={4}
-                          className={`w-full px-4 py-2.5 bg-slate-50 border rounded-xl text-sm font-mono focus:outline-none transition-all ${errors.cvv ? "border-rose-400" : "border-slate-200 focus:border-brand-400 focus:ring-2 focus:ring-brand-100"}`}
+                          className={`w-full px-4 py-2.5 bg-white dark:bg-slate-700 border-2 rounded-xl text-sm font-mono text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none transition-all ${errors.cvv ? "border-rose-400 dark:border-rose-600" : "border-slate-300 dark:border-slate-600 focus:border-brand-500 focus:ring-2 focus:ring-brand-200 dark:focus:ring-brand-900/50"}`}
                         />
                       </div>
                     </div>
                   </div>
                 )}
 
-                <div className="flex items-center gap-2 text-slate-500 text-xs bg-slate-50 p-3 rounded-lg">
-                  <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+                <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 text-xs bg-slate-50 dark:bg-slate-700/50 p-3 rounded-lg">
+                  <ShieldCheck className="w-4 h-4 text-emerald-500 dark:text-emerald-400 shrink-0" />
                   <span>
                     Your payment information is encrypted and securely processed
                     through Razorpay.

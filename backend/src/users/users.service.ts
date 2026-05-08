@@ -1,5 +1,4 @@
 import { Injectable } from "@nestjs/common";
-import type { Role } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
@@ -14,8 +13,26 @@ export class UsersService {
     return this.prisma.user.findUnique({ where: { id } });
   }
 
-  create(data: { name: string; email: string; password: string; role: Role }) {
+  create(data: {
+    name: string;
+    email: string;
+    password: string;
+    role: string;
+  }) {
     return this.prisma.user.create({ data });
+  }
+
+  updateRole(id: number, role: string) {
+    return this.prisma.user.update({
+      where: { id },
+      data: { role },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+      },
+    });
   }
 
   findAll() {

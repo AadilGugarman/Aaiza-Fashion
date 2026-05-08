@@ -15,6 +15,12 @@ export class RolesGuard implements CanActivate {
       return true;
     }
     const { user } = context.switchToHttp().getRequest();
+
+    // SUPERADMIN can access any admin endpoint
+    if (user?.role === "SUPERADMIN") {
+      return true;
+    }
+
     return requiredRoles.includes(user?.role);
   }
 }

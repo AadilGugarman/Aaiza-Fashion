@@ -6,6 +6,7 @@ import {
   IsString,
   IsUrl,
   Min,
+  IsArray,
 } from "class-validator";
 
 export class CreateProductDto {
@@ -32,7 +33,14 @@ export class CreateProductDto {
   @Type(() => Number)
   price!: number;
 
-  @IsNotEmpty()
-  @IsUrl()
-  imageUrl!: string;
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Type(() => Number)
+  originalPrice?: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  images?: string[];
 }

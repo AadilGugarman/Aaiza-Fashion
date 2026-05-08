@@ -68,4 +68,47 @@ export class UploadsService {
       assetUrl,
     };
   }
+
+  async uploadFile(file: Express.Multer.File) {
+    const sanitizedFilename = file.originalname.replace(
+      /[^a-zA-Z0-9._-]/g,
+      "_",
+    );
+    const key = `products/${randomUUID()}-${sanitizedFilename}`;
+
+    // In development without S3, return mock URL
+    if (this.isDevelopment || !this.client) {
+      return {
+        key,
+        assetUrl: `https://placehold.co/400x500/f1f5f9/94a3b8?text=Product`,
+      };
+    }
+
+    try {
+      // Upload file directly to S3/R2
+      const command = new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+        ContentLength: file.size,
+      });
+
+      await this.client.send(command);
+
+      // Return the asset URL
+      const assetUrl = this.publicUrl
+        ? `${this.publicUrl.replace(/\/$/, "")}/${key}`
+        : `${this.endpointUrl?.replace(/\/$/, "")}/${this.bucket}/${key}`;
+
+      return {
+        key,
+        assetUrl,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `Failed to upload file: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
 }

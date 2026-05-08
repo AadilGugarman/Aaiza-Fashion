@@ -43,17 +43,18 @@ export const ProductList: React.FC<{
       .filter((p) => p.price <= priceRange)
       .filter(
         (p) =>
-          p.name.toLowerCase().includes(search.toLowerCase()) ||
-          p.description.toLowerCase().includes(search.toLowerCase()) ||
-          p.category.toLowerCase().includes(search.toLowerCase()),
+          (p.name ?? "").toLowerCase().includes(search.toLowerCase()) ||
+          (p.description ?? "").toLowerCase().includes(search.toLowerCase()) ||
+          (p.category ?? "").toLowerCase().includes(search.toLowerCase()),
       )
-      .filter((p) => !showWishlistOnly || wishlist.includes(p._id))
+
+      .filter((p) => !showWishlistOnly || wishlist.includes(p._id ?? ""))
       .sort((a, b) => {
         if (sortBy === "price-asc") return a.price - b.price;
         if (sortBy === "price-desc") return b.price - a.price;
         if (sortBy === "rating") return b.rating - a.rating;
         // newest: sort by _id descending (higher IDs are newer)
-        return b._id.localeCompare(a._id);
+        return (b._id ?? "").localeCompare(a._id ?? "");
       });
     return result;
   }, [
@@ -93,9 +94,9 @@ export const ProductList: React.FC<{
   };
 
   const FilterSidebar = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-100/50 dark:border-slate-700 transition-colors">
       <div className="flex items-center justify-between">
-        <h3 className="font-bold text-slate-900">Filters</h3>
+        <h3 className="font-bold text-slate-900 dark:text-white">Filters</h3>
         <button
           onClick={() => {
             setSelectedCat("All");
@@ -103,7 +104,7 @@ export const ProductList: React.FC<{
             if (!isWishlistMode) setShowWishlistOnlyState(false);
             setSearch("");
           }}
-          className="text-xs text-brand-600 hover:text-brand-700 font-semibold"
+          className="text-xs text-brand-600 dark:text-brand-400 hover:text-brand-700 dark:hover:text-brand-300 font-semibold"
         >
           Reset All
         </button>
@@ -111,7 +112,7 @@ export const ProductList: React.FC<{
 
       {/* Categories */}
       <div>
-        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-3">
+        <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider block mb-3">
           Categories
         </label>
         <div className="space-y-1">
@@ -121,8 +122,8 @@ export const ProductList: React.FC<{
               onClick={() => setSelectedCat(cat)}
               className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
                 selectedCat === cat
-                  ? "bg-brand-50 text-brand-700 font-semibold"
-                  : "text-slate-600 hover:bg-slate-50"
+                  ? "bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 font-semibold"
+                  : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50"
               }`}
             >
               {cat}
@@ -133,7 +134,7 @@ export const ProductList: React.FC<{
 
       {/* Price Range */}
       <div>
-        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider block mb-2">
+        <label className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider block mb-2">
           Max Price: ₹{priceRange}
         </label>
         <input
@@ -145,7 +146,7 @@ export const ProductList: React.FC<{
           onChange={(e) => setPriceRange(Number(e.target.value))}
           className="w-full accent-brand-500"
         />
-        <div className="flex justify-between text-xs text-slate-400 mt-1 font-mono">
+        <div className="flex justify-between text-xs text-slate-500 dark:text-slate-500 mt-1 font-mono">
           <span>₹0</span>
           <span>₹50000</span>
         </div>
@@ -156,10 +157,10 @@ export const ProductList: React.FC<{
         <div>
           <button
             onClick={() => setShowWishlistOnlyState(!showWishlistOnlyState)}
-            className={`w-full px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 ${
+            className={`w-full px-3 py-2 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 border-2 ${
               showWishlistOnly
-                ? "bg-rose-50 text-rose-700 border border-rose-200"
-                : "bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100"
+                ? "bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300 border-rose-200 dark:border-rose-900/50"
+                : "bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600"
             }`}
           >
             <Heart
@@ -173,14 +174,14 @@ export const ProductList: React.FC<{
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 animate-fade-in">
+    <div className="max-w-7xl mx-auto px-4 py-8 animate-fade-in bg-slate-50 dark:bg-slate-950 transition-colors min-h-screen">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
             {showWishlistOnly ? "My Wishlist" : "Shop Collection"}
           </h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
             {filteredProducts.length} items found
           </p>
         </div>
@@ -189,7 +190,7 @@ export const ProductList: React.FC<{
           {/* Mobile filter toggle */}
           <button
             onClick={() => setShowMobileFilters(!showMobileFilters)}
-            className="lg:hidden p-2 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50"
+            className="lg:hidden p-2 bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
           >
             <SlidersHorizontal className="w-5 h-5" />
           </button>
@@ -202,7 +203,7 @@ export const ProductList: React.FC<{
               placeholder="Search products..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-sm placeholder:text-slate-400 focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
+              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-100/50 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-slate-400 focus:outline-none focus:border-brand-500/50 focus:ring-2 focus:ring-brand-200/50 dark:focus:ring-brand-900/50 transition-all"
             />
             {search && (
               <button
@@ -218,7 +219,7 @@ export const ProductList: React.FC<{
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-            className="px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-700 text-sm focus:outline-none focus:border-brand-400"
+            className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-100/50 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 text-sm focus:outline-none focus:border-brand-500/50 focus:ring-2 focus:ring-brand-200/50 dark:focus:ring-brand-900/50 transition-all"
           >
             <option value="newest">Newest</option>
             <option value="rating">Top Rated</option>
@@ -227,16 +228,16 @@ export const ProductList: React.FC<{
           </select>
 
           {/* Grid / List */}
-          <div className="hidden sm:flex bg-white border border-slate-200 rounded-lg p-0.5">
+          <div className="hidden sm:flex bg-white dark:bg-slate-800 border border-slate-100/50 dark:border-slate-700 rounded-lg p-0.5">
             <button
               onClick={() => setViewMode("grid")}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === "grid" ? "bg-brand-100 text-brand-600" : "text-slate-400 hover:text-slate-600"}`}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === "grid" ? "bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400" : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"}`}
             >
               <Grid className="w-4 h-4" />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`p-1.5 rounded-md transition-colors ${viewMode === "list" ? "bg-brand-100 text-brand-600" : "text-slate-400 hover:text-slate-600"}`}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === "list" ? "bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400" : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"}`}
             >
               <List className="w-4 h-4" />
             </button>
@@ -285,9 +286,9 @@ export const ProductList: React.FC<{
                   return (
                     <div
                       key={prod._id}
-                      className="group bg-white border border-slate-200 rounded-xl overflow-hidden hover:shadow-lg hover:border-slate-300 transition-all duration-300"
+                      className="group bg-white dark:bg-slate-800 border border-slate-100/50 dark:border-slate-700 rounded-xl overflow-hidden hover:shadow-lg hover:border-slate-200/50 dark:hover:border-slate-600/50 transition-all duration-300"
                     >
-                      <div className="relative overflow-hidden bg-slate-100 aspect-[3/4]">
+                      <div className="relative overflow-hidden bg-slate-100 dark:bg-slate-700 aspect-[3/4]">
                         <img
                           onClick={() => setSelectedProduct(prod._id)}
                           src={prod.images[0]}
@@ -317,31 +318,31 @@ export const ProductList: React.FC<{
                         )}
                       </div>
                       <div className="p-4">
-                        <span className="text-[10px] uppercase font-bold text-brand-500 tracking-widest">
+                        <span className="text-[10px] uppercase font-bold text-brand-500 dark:text-brand-400 tracking-widest">
                           {prod.category}
                         </span>
                         <h3
                           onClick={() => setSelectedProduct(prod._id)}
-                          className="font-bold text-slate-900 mt-1 mb-2 hover:text-brand-600 cursor-pointer line-clamp-1 text-sm"
+                          className="font-bold text-slate-900 dark:text-white mt-1 mb-2 hover:text-brand-600 dark:hover:text-brand-400 cursor-pointer line-clamp-1 text-sm"
                         >
                           {prod.name}
                         </h3>
                         <div className="flex items-center gap-1 mb-3">
                           <Star className="w-3.5 h-3.5 text-amber-400 fill-current" />
-                          <span className="text-xs font-semibold text-slate-700">
+                          <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                             {prod.rating}
                           </span>
-                          <span className="text-xs text-slate-400">
+                          <span className="text-xs text-slate-500 dark:text-slate-400">
                             ({prod.reviewsCount})
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-baseline gap-2">
-                            <span className="text-lg font-extrabold text-slate-900">
+                            <span className="text-lg font-extrabold text-slate-900 dark:text-white">
                               ₹{prod.price.toFixed(2)}
                             </span>
                             {prod.originalPrice && (
-                              <span className="text-sm text-slate-400 line-through">
+                              <span className="text-sm text-slate-500 dark:text-slate-400 line-through">
                                 ₹{prod.originalPrice.toFixed(2)}
                               </span>
                             )}
