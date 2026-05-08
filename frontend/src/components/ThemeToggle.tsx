@@ -4,6 +4,8 @@ import { Moon, Sun } from "lucide-react";
 export const ThemeToggle: React.FC = () => {
   const [isDark, setIsDark] = useState(false);
 
+  // Light mode only: disable toggling UI entirely.
+
   useEffect(() => {
     // Check for saved theme preference or default to light mode
     const savedTheme = localStorage.getItem("theme");
@@ -30,13 +32,5 @@ export const ThemeToggle: React.FC = () => {
     }
   };
 
-  return (
-    <button
-      onClick={toggleTheme}
-      className="theme-toggle p-2 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-all duration-200 touch-button"
-      aria-label="Toggle theme"
-    >
-      {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-    </button>
-  );
+  return null;
 };

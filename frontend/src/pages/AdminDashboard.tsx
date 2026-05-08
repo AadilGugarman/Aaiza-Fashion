@@ -40,9 +40,6 @@ export const AdminDashboard: React.FC = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editVals, setEditVals] = useState<any>({});
   const [newCat, setNewCat] = useState("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [uploadError, setUploadError] = useState("");
   const [users, setUsers] = useState<any[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [showCreateUserForm, setShowCreateUserForm] = useState(false);
@@ -240,16 +237,89 @@ export const AdminDashboard: React.FC = () => {
     name: "",
     description: "",
     price: 0,
+    originalPrice: 0,
+    discountType: "amount", // "amount" or "percentage"
+    discountValue: 0,
     category: categories[0] || "Dresses",
     stock: 10,
-    images:
-      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=800",
+    images: [] as string[],
   });
+  const [uploadedImages, setUploadedImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const totalRevenue = orders.reduce((acc, o) => acc + o.total, 0);
   const totalProducts = products.length;
   const totalOrders = orders.length;
   const lowStock = products.filter((p) => p.stock < 10).length;
+
+  const uploadImages = async (
+    files: File[],
+    authToken: string,
+  ): Promise<string[]> => {
+    const uploadedUrls: string[] = [];
+
+    // Debug: Check token
+    console.log(
+      `🔐 Auth token present: ${!!authToken}, length: ${authToken?.length}`,
+    );
+    if (!authToken) {
+      throw new Error(
+        "No authentication token available. Please log in again.",
+      );
+    }
+
+    for (const file of files) {
+      try {
+        console.log(`📸 Starting upload for: ${file.name}`);
+
+        // Create FormData for file upload
+        const formData = new FormData();
+        formData.append("file", file);
+
+        console.log(`🔗 Uploading to backend endpoint: /uploads/upload`);
+        console.log(
+          `📝 Headers: Authorization: Bearer ${authToken.substring(0, 20)}...`,
+        );
+
+        // Upload directly through backend
+        const response = await fetch(`${API_BASE}/uploads/upload`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+          body: formData,
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(
+            `Upload failed: ${response.status} ${response.statusText} - ${errorText}`,
+          );
+        }
+
+        const uploadResponse = await response.json();
+        console.log(`📋 Upload Response:`, uploadResponse);
+
+        if (!uploadResponse || !uploadResponse.assetUrl) {
+          throw new Error(
+            `Invalid upload response: ${JSON.stringify(uploadResponse)}`,
+          );
+        }
+
+        console.log(`🎉 Asset URL: ${uploadResponse.assetUrl}`);
+        uploadedUrls.push(uploadResponse.assetUrl);
+      } catch (error) {
+        console.error(`❌ Image upload error for ${file.name}:`, error);
+        throw new Error(
+          `Failed to upload image: ${file.name} - ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
+    return uploadedUrls;
+  };
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -257,22 +327,52 @@ export const AdminDashboard: React.FC = () => {
       showToast("Product name is required", "error");
       return;
     }
+    if (newProd.price <= 0) {
+      showToast("Product price must be greater than 0", "error");
+      return;
+    }
     if (!currentUser || !currentUser.token) {
       showToast("Admin login required", "error");
       return;
     }
 
+    setLoading(true);
+    setUploadingImages(true);
     try {
+      // Upload new images if any
+      let allImages = [...newProd.images];
+      if (uploadedImages.length > 0) {
+        const newImageUrls = await uploadImages(
+          uploadedImages,
+          currentUser.token,
+        );
+        allImages = [...allImages, ...newImageUrls];
+      }
+
+      // Calculate final price based on discount
+      let finalPrice = newProd.price;
+      let originalPrice = undefined;
+
+      if (newProd.discountValue > 0) {
+        originalPrice = newProd.price;
+        if (newProd.discountType === "percentage") {
+          finalPrice = newProd.price * (1 - newProd.discountValue / 100);
+        } else {
+          finalPrice = Math.max(0, newProd.price - newProd.discountValue);
+        }
+      }
+
       const response = await apiFetch("/products", {
         method: "POST",
         headers: buildHeaders(currentUser.token),
         body: JSON.stringify({
           name: newProd.name,
           description: newProd.description,
-          price: Number(newProd.price),
+          price: Number(finalPrice.toFixed(2)),
+          originalPrice: originalPrice,
           category: newProd.category,
           stock: Number(newProd.stock),
-          imageUrl: newProd.images,
+          images: allImages,
         }),
       });
 
@@ -282,97 +382,101 @@ export const AdminDashboard: React.FC = () => {
           _id: response._id || `p-${response.id}`,
           name: newProd.name,
           description: newProd.description,
-          price: Number(newProd.price),
+          price: finalPrice,
+          originalPrice: originalPrice,
           category: newProd.category,
           stock: Number(newProd.stock),
-          images: [newProd.images],
+          images: allImages,
         } as any);
 
+        // Reset form
         setNewProd({
           name: "",
           description: "",
           price: 0,
+          originalPrice: 0,
+          discountType: "amount",
+          discountValue: 0,
           category: categories[0] || "Dresses",
           stock: 10,
-          images:
-            "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&q=80&w=800",
+          images: [],
         });
-        setImageFile(null);
-        setUploadError("");
+        setUploadedImages([]);
+        setImagePreviews([]);
         setShowAddForm(false);
         showToast("Product added successfully!", "success");
       }
     } catch (error) {
       console.error("Add product error:", error);
-      showToast("Failed to add product. Please try again.", "error");
+      showToast(
+        error instanceof Error
+          ? error.message
+          : "Failed to add product. Please try again.",
+        "error",
+      );
+    } finally {
+      setLoading(false);
+      setUploadingImages(false);
     }
   };
 
-  const handleUploadImage = async () => {
-    if (!imageFile) {
-      showToast("Select an image file first", "error");
-      return;
-    }
-    if (!currentUser?.token) {
-      showToast("Sign in as admin to upload images", "error");
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length + uploadedImages.length > 5) {
+      showToast("Maximum 5 images allowed", "error");
       return;
     }
 
-    setUploadingImage(true);
-    setUploadError("");
+    const newImages = [...uploadedImages, ...files];
+    setUploadedImages(newImages);
 
-    try {
-      const signResponse = await fetch(
-        `${API_BASE}/uploads/sign?filename=${encodeURIComponent(imageFile.name)}&contentType=${encodeURIComponent(imageFile.type)}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${currentUser.token}`,
-          },
-        },
-      );
+    // Create previews
+    const newPreviews = [...imagePreviews];
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          newPreviews.push(e.target.result as string);
+          setImagePreviews([...newPreviews]);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
 
-      if (!signResponse.ok) {
-        throw new Error("Failed to create upload URL");
-      }
+  const removeImage = (index: number) => {
+    const newImages = uploadedImages.filter((_, i) => i !== index);
+    const newPreviews = imagePreviews.filter((_, i) => i !== index);
+    setUploadedImages(newImages);
+    setImagePreviews(newPreviews);
+  };
 
-      const uploadData = await signResponse.json();
-      const uploadResult = await fetch(uploadData.uploadUrl, {
-        method: "PUT",
-        headers: {
-          "Content-Type": imageFile.type,
-        },
-        body: imageFile,
-      });
-
-      if (!uploadResult.ok) {
-        throw new Error("Image upload failed");
-      }
-
-      setNewProd({ ...newProd, images: uploadData.assetUrl });
-      setImageFile(null);
-      showToast("Image uploaded successfully", "success");
-    } catch (error) {
-      setUploadError((error as Error).message || "Upload failed");
-      showToast("Image upload failed", "error");
-    } finally {
-      setUploadingImage(false);
-    }
+  const removeUploadedImage = (index: number) => {
+    const newImages = newProd.images.filter((_, i) => i !== index);
+    setNewProd({ ...newProd, images: newImages });
   };
 
   const handleStartEdit = (prod: any) => {
     setEditingId(prod._id);
-    setEditVals({ name: prod.name, price: prod.price, stock: prod.stock });
+    setEditVals({
+      name: prod.name,
+      price: prod.price,
+      stock: prod.stock,
+      id: prod.id,
+    });
   };
 
-  const handleSaveEdit = async (id: string) => {
+  const handleSaveEdit = async (transformedId: string) => {
     if (!currentUser || !currentUser.token) {
       showToast("Admin login required", "error");
       return;
     }
 
     try {
-      const response = await apiFetch(`/products/${id}`, {
+      // Extract numeric ID from the editVals (stored during handleStartEdit)
+      const numericId = editVals.id;
+
+      const response = await apiFetch(`/products/${numericId}`, {
         method: "PATCH",
         headers: buildHeaders(currentUser.token),
         body: JSON.stringify({
@@ -383,7 +487,7 @@ export const AdminDashboard: React.FC = () => {
       });
 
       if (response && (response.id || response._id)) {
-        updateProduct(id, {
+        updateProduct(transformedId, {
           name: editVals.name,
           price: Number(editVals.price),
           stock: Number(editVals.stock),
@@ -420,26 +524,26 @@ export const AdminDashboard: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 animate-fade-in">
+    <div className="max-w-7xl mx-auto px-4 py-8 animate-fade-in bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:bg-slate-950 transition-colors min-h-screen">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+          <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
             <Package className="w-6 h-6 text-brand-500" /> Admin Dashboard
           </h1>
-          <p className="text-slate-500 text-sm mt-1">
+          <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">
             Manage your Aaiza Fashion store
           </p>
         </div>
-        <div className="flex bg-slate-100 p-1 rounded-xl gap-0.5 overflow-x-auto max-w-full">
+        <div className="flex bg-slate-100/50 dark:bg-slate-800 p-1 rounded-xl gap-0.5 overflow-x-auto max-w-full border border-slate-100/50 dark:border-slate-700/50">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveSubTab(tab.id)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap transition-all ${
                 activeSubTab === tab.id
-                  ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-500 hover:text-slate-800"
+                  ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
               }`}
             >
               <tab.icon className="w-3.5 h-3.5" />
@@ -500,7 +604,7 @@ export const AdminDashboard: React.FC = () => {
             ].map((stat, idx) => (
               <div
                 key={idx}
-                className={`bg-white border rounded-xl p-6 shadow-sm hover:shadow-md transition-all duration-200 ${stat.border}`}
+                className={`bg-white dark:bg-slate-800 border border-slate-100/50 dark:border-slate-700 rounded-xl p-6 shadow-sm hover:shadow-md hover:border-slate-200/50 transition-all duration-200 ${stat.border}`}
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className={`p-3 rounded-xl ${stat.bg}`}>
@@ -518,10 +622,10 @@ export const AdminDashboard: React.FC = () => {
                     {stat.change}
                   </div>
                 </div>
-                <p className="text-3xl font-extrabold text-slate-900 mb-1">
+                <p className="text-3xl font-extrabold text-slate-900 dark:text-white mb-1">
                   {stat.value}
                 </p>
-                <p className="text-sm text-slate-600 font-medium">
+                <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">
                   {stat.label}
                 </p>
               </div>
@@ -531,15 +635,17 @@ export const AdminDashboard: React.FC = () => {
           {/* Charts and Analytics */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Revenue Chart Placeholder */}
-            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-              <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-slate-800 border border-slate-100/50 dark:border-slate-700 rounded-xl p-6 shadow-sm">
+              <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <TrendingUp className="w-5 h-5 text-brand-500" /> Revenue Trend
               </h3>
-              <div className="h-64 flex items-center justify-center bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
+              <div className="h-64 flex items-center justify-center bg-slate-50 dark:bg-slate-700 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-600">
                 <div className="text-center">
-                  <TrendingUp className="w-12 h-12 text-slate-400 mx-auto mb-3" />
-                  <p className="text-slate-500 font-medium">Revenue Chart</p>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <TrendingUp className="w-12 h-12 text-slate-400 dark:text-slate-500 mx-auto mb-3" />
+                  <p className="text-slate-500 dark:text-slate-400 font-medium">
+                    Revenue Chart
+                  </p>
+                  <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
                     Coming soon with real data
                   </p>
                 </div>
@@ -547,8 +653,8 @@ export const AdminDashboard: React.FC = () => {
             </div>
 
             {/* Order Status Distribution */}
-            <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
-              <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+            <div className="bg-white dark:bg-slate-800 border border-slate-100/50 dark:border-slate-700 rounded-xl p-6 shadow-sm">
+              <h3 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <FileSpreadsheet className="w-5 h-5 text-brand-500" /> Order
                 Status
               </h3>
@@ -586,11 +692,11 @@ export const AdminDashboard: React.FC = () => {
                     key={item.status}
                     className="flex items-center justify-between"
                   >
-                    <span className="text-sm font-medium text-slate-700">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
                       {item.status}
                     </span>
                     <div className="flex items-center gap-3">
-                      <div className="w-24 bg-slate-200 rounded-full h-2">
+                      <div className="w-24 bg-slate-200 dark:bg-slate-600 rounded-full h-2">
                         <div
                           className={`h-2 rounded-full ${item.color}`}
                           style={{
@@ -598,7 +704,7 @@ export const AdminDashboard: React.FC = () => {
                           }}
                         ></div>
                       </div>
-                      <span className="text-sm font-bold text-slate-900 w-8 text-right">
+                      <span className="text-sm font-bold text-slate-900 dark:text-white w-8 text-right">
                         {item.count}
                       </span>
                     </div>
@@ -712,7 +818,7 @@ export const AdminDashboard: React.FC = () => {
       {activeSubTab === "products" && (
         <div className="space-y-6">
           <div className="flex justify-between items-center">
-            <h3 className="font-bold text-slate-900 flex items-center gap-2">
+            <h3 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <FileSpreadsheet className="w-4 h-4 text-brand-500" /> Product
               Inventory
             </h3>
@@ -733,143 +839,352 @@ export const AdminDashboard: React.FC = () => {
           {showAddForm && (
             <form
               onSubmit={handleAddProduct}
-              className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm animate-fade-in-up"
+              className="bg-white dark:bg-slate-800 border border-slate-100/50 dark:border-slate-700 rounded-xl shadow-sm animate-fade-in-up"
             >
-              <h4 className="font-bold text-slate-900 mb-4">New Product</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">
-                    Name
-                  </label>
-                  <input
-                    required
-                    type="text"
-                    value={newProd.name}
-                    onChange={(e) =>
-                      setNewProd({ ...newProd, name: e.target.value })
-                    }
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">
-                    Description
-                  </label>
-                  <textarea
-                    required
-                    rows={2}
-                    value={newProd.description}
-                    onChange={(e) =>
-                      setNewProd({ ...newProd, description: e.target.value })
-                    }
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100"
-                  />
-                </div>
+              <div className="p-6 border-b border-slate-100/50 dark:border-slate-700">
+                <h4 className="font-bold text-slate-900 dark:text-white">
+                  Add New Product
+                </h4>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                  Fill in the details below to add a new product to your
+                  inventory.
+                </p>
+              </div>
+
+              <div className="p-6 space-y-8">
+                {/* Basic Info Section */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">
-                    Category
-                  </label>
-                  <select
-                    value={newProd.category}
-                    onChange={(e) =>
-                      setNewProd({ ...newProd, category: e.target.value })
-                    }
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand-400"
-                  >
-                    {categories
-                      .filter((c) => c !== "All")
-                      .map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                  </select>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex-1">
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
-                      Price (₹)
-                    </label>
-                    <input
-                      required
-                      type="number"
-                      value={newProd.price}
-                      onChange={(e) =>
-                        setNewProd({
-                          ...newProd,
-                          price: Number(e.target.value),
-                        })
-                      }
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand-400"
-                    />
+                  <h5 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                    <Package className="w-4 h-4" />
+                    Basic Information
+                  </h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Product Name *
+                      </label>
+                      <input
+                        required
+                        type="text"
+                        value={newProd.name}
+                        onChange={(e) =>
+                          setNewProd({ ...newProd, name: e.target.value })
+                        }
+                        placeholder="Enter product name"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition-colors"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Description *
+                      </label>
+                      <textarea
+                        required
+                        rows={3}
+                        value={newProd.description}
+                        onChange={(e) =>
+                          setNewProd({
+                            ...newProd,
+                            description: e.target.value,
+                          })
+                        }
+                        placeholder="Describe your product"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition-colors resize-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Category *
+                      </label>
+                      <select
+                        value={newProd.category}
+                        onChange={(e) =>
+                          setNewProd({ ...newProd, category: e.target.value })
+                        }
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition-colors"
+                      >
+                        {categories
+                          .filter((c) => c !== "All")
+                          .map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <label className="block text-xs font-semibold text-slate-600 mb-1">
-                      Stock
-                    </label>
-                    <input
-                      required
-                      type="number"
-                      value={newProd.stock}
-                      onChange={(e) =>
-                        setNewProd({
-                          ...newProd,
-                          stock: Number(e.target.value),
-                        })
-                      }
-                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand-400"
-                    />
+                </div>
+
+                {/* Pricing Section */}
+                <div>
+                  <h5 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    Pricing & Discounts
+                  </h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Base Price (₹) *
+                      </label>
+                      <input
+                        required
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={newProd.price}
+                        onChange={(e) =>
+                          setNewProd({
+                            ...newProd,
+                            price: Number(e.target.value),
+                          })
+                        }
+                        placeholder="0.00"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Discount Type
+                      </label>
+                      <select
+                        value={newProd.discountType}
+                        onChange={(e) =>
+                          setNewProd({
+                            ...newProd,
+                            discountType: e.target.value,
+                          })
+                        }
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition-colors"
+                      >
+                        <option value="amount">Fixed Amount (₹)</option>
+                        <option value="percentage">Percentage (%)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Discount Value
+                      </label>
+                      <input
+                        type="number"
+                        min="0"
+                        max={
+                          newProd.discountType === "percentage"
+                            ? 100
+                            : undefined
+                        }
+                        step={
+                          newProd.discountType === "percentage" ? "1" : "0.01"
+                        }
+                        value={newProd.discountValue}
+                        onChange={(e) =>
+                          setNewProd({
+                            ...newProd,
+                            discountValue: Number(e.target.value),
+                          })
+                        }
+                        placeholder={
+                          newProd.discountType === "percentage" ? "0" : "0.00"
+                        }
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Final Price Preview
+                      </label>
+                      <div className="px-4 py-3 bg-slate-100 border border-slate-200 rounded-lg">
+                        {newProd.discountValue > 0 ? (
+                          <div className="flex items-center gap-2">
+                            <span className="text-lg font-bold text-slate-900">
+                              ₹
+                              {newProd.discountType === "percentage"
+                                ? (
+                                    newProd.price *
+                                    (1 - newProd.discountValue / 100)
+                                  ).toFixed(2)
+                                : Math.max(
+                                    0,
+                                    newProd.price - newProd.discountValue,
+                                  ).toFixed(2)}
+                            </span>
+                            <span className="text-sm text-slate-500 line-through">
+                              ₹{newProd.price.toFixed(2)}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-lg font-bold text-slate-900">
+                            ₹{newProd.price.toFixed(2)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">
-                    Upload Product Image
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
-                    className="w-full text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-50 file:text-brand-700"
-                  />
-                  <div className="mt-3 flex flex-wrap gap-3 items-center">
-                    <button
-                      type="button"
-                      onClick={handleUploadImage}
-                      disabled={!imageFile || uploadingImage}
-                      className="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-semibold transition-all disabled:opacity-60"
-                    >
-                      {uploadingImage ? "Uploading…" : "Upload Image"}
-                    </button>
-                    {newProd.images && (
-                      <span className="text-xs text-slate-500 break-all">
-                        Uploaded: {newProd.images}
-                      </span>
+
+                {/* Inventory Section */}
+                <div>
+                  <h5 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4" />
+                    Inventory
+                  </h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Stock Quantity *
+                      </label>
+                      <input
+                        required
+                        type="number"
+                        min="0"
+                        value={newProd.stock}
+                        onChange={(e) =>
+                          setNewProd({
+                            ...newProd,
+                            stock: Number(e.target.value),
+                          })
+                        }
+                        placeholder="Enter stock quantity"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand-400 focus:ring-2 focus:ring-brand-100 transition-colors"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Images Section */}
+                <div>
+                  <h5 className="text-sm font-semibold text-slate-700 mb-4 flex items-center gap-2">
+                    <Eye className="w-4 h-4" />
+                    Product Images
+                  </h5>
+                  <div className="space-y-4">
+                    <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-brand-400 transition-colors">
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageSelect}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      <label
+                        htmlFor="image-upload"
+                        className="cursor-pointer flex flex-col items-center gap-2"
+                      >
+                        <Package className="w-8 h-8 text-slate-400" />
+                        <span className="text-sm text-slate-600">
+                          Click to upload images or drag and drop
+                        </span>
+                        <span className="text-xs text-slate-500">
+                          PNG, JPG, GIF up to 10MB each
+                        </span>
+                      </label>
+                    </div>
+
+                    {/* Image Preview Grid */}
+                    {uploadedImages.length > 0 && (
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {uploadedImages.map((_, index) => (
+                          <div key={index} className="relative group">
+                            <div className="aspect-square bg-slate-100 rounded-lg overflow-hidden">
+                              <img
+                                src={imagePreviews[index]}
+                                alt={`Preview ${index + 1}`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                            {uploadingImages && (
+                              <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg">
+                                <div className="text-white text-sm">
+                                  Uploading...
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Uploaded Images */}
+                    {newProd.images && newProd.images.length > 0 && (
+                      <div>
+                        <h6 className="text-sm font-medium text-slate-700 mb-2">
+                          Uploaded Images
+                        </h6>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                          {newProd.images.map((imageUrl, index) => (
+                            <div key={index} className="relative group">
+                              <div className="aspect-square bg-slate-100 rounded-lg overflow-hidden">
+                                <img
+                                  src={imageUrl}
+                                  alt={`Uploaded ${index + 1}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => removeUploadedImage(index)}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     )}
                   </div>
-                  {uploadError && (
-                    <p className="text-rose-500 text-xs mt-2">{uploadError}</p>
-                  )}
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">
-                    Image URL
-                  </label>
-                  <input
-                    type="text"
-                    value={newProd.images}
-                    onChange={(e) =>
-                      setNewProd({ ...newProd, images: e.target.value })
-                    }
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-brand-400"
-                  />
                 </div>
               </div>
-              <button
-                type="submit"
-                className="mt-4 px-6 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg text-sm transition-all"
-              >
-                Add Product
-              </button>
+
+              {/* Form Actions */}
+              <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setNewProd({
+                      name: "",
+                      description: "",
+                      price: 0,
+                      originalPrice: 0,
+                      discountType: "amount",
+                      discountValue: 0,
+                      category: categories[0] || "Dresses",
+                      stock: 10,
+                      images: [],
+                    });
+                    setUploadedImages([]);
+                    setImagePreviews([]);
+                  }}
+                  className="px-4 py-2 text-slate-600 hover:text-slate-800 text-sm font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 bg-brand-500 hover:bg-brand-600 disabled:bg-slate-300 text-white font-medium py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Creating Product...
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="w-4 h-4" />
+                      Create Product
+                    </>
+                  )}
+                </button>
+              </div>
             </form>
           )}
 

@@ -115,7 +115,12 @@ interface AppContextType {
     color?: string,
   ) => void;
   removeFromCart: (productId: string, size?: string, color?: string) => void;
-  updateCartQuantity: (productId: string, size?: string, color?: string, quantity: number) => void;
+  updateCartQuantity: (
+    productId: string,
+    size?: string,
+    color?: string,
+    quantity: number,
+  ) => void;
   clearCart: () => void;
   toggleWishlist: (productId: string) => void;
   placeOrder: (
@@ -143,8 +148,8 @@ const initialProducts: Product[] = [
     name: "Silk Embroidered Maxi Dress",
     description:
       "Elegant floor-length maxi dress crafted from pure silk with delicate hand-embroidered floral motifs. Features a flattering A-line silhouette and hidden back zipper.",
-    price: 15999.00,
-    originalPrice: 20999.00,
+    price: 15999.0,
+    originalPrice: 20999.0,
     category: "Dresses",
     subcategory: "Maxi",
     stock: 18,
@@ -183,7 +188,7 @@ const initialProducts: Product[] = [
     name: "Tailored Wool Blend Blazer",
     description:
       "Sophisticated single-breasted blazer in premium Italian wool blend. Features notch lapels, double-vented back, and fully lined interior for a polished finish.",
-    price: 22999.00,
+    price: 22999.0,
     category: "Outerwear",
     subcategory: "Blazers",
     stock: 12,
@@ -213,8 +218,8 @@ const initialProducts: Product[] = [
     name: "Cashmere Oversized Sweater",
     description:
       "Luxuriously soft 100% Grade-A Mongolian cashmere sweater in a relaxed oversized fit. Features ribbed cuffs and hem with a classic crew neckline.",
-    price: 13999.00,
-    originalPrice: 17999.00,
+    price: 13999.0,
+    originalPrice: 17999.0,
     category: "Knitwear",
     subcategory: "Sweaters",
     stock: 25,
@@ -252,7 +257,7 @@ const initialProducts: Product[] = [
     name: "High-Waist Wide Leg Trousers",
     description:
       "Modern wide-leg trousers with a flattering high-rise waist. Made from breathable crepe fabric with a flowing drape and side pockets.",
-    price: 8499.00,
+    price: 8499.0,
     category: "Bottoms",
     subcategory: "Trousers",
     stock: 30,
@@ -579,41 +584,43 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        console.log('Fetching products from API...');
+        console.log("Fetching products from API...");
         const response = await apiFetch("/products", {
           method: "GET",
           headers: buildHeaders(undefined),
         });
-        
-        console.log('API Response:', response);
+
+        console.log("API Response:", response);
         let productsData: Product[] = [];
         if (Array.isArray(response)) {
           productsData = response;
         } else if (response.data) {
           productsData = response.data;
         }
-        
-        console.log('Products data:', productsData);
+
+        console.log("Products data:", productsData);
         // If backend returns no products, fall back to built-in seed products
         if (productsData.length === 0) {
-          console.warn('No products returned from API, falling back to built-in products.');
+          console.warn(
+            "No products returned from API, falling back to built-in products.",
+          );
           productsData = initialProducts;
         }
 
         // Transform backend data to match frontend format
-        const transformedProducts = productsData.map(product => ({
+        const transformedProducts = productsData.map((product) => ({
           ...product,
           _id: product._id || `p${product.id}`,
-          images: product.images || [product.imageUrl || ''],
+          images: product.images || [product.imageUrl || ""],
           rating: product.rating || 4.5,
           reviewsCount: product.reviewsCount || 0,
           reviews: product.reviews || [],
         }));
-        
-        console.log('Transformed products:', transformedProducts);
+
+        console.log("Transformed products:", transformedProducts);
         setProducts(transformedProducts);
       } catch (error) {
-        console.error('Fetch products failed, using initial products:', error);
+        console.error("Fetch products failed, using initial products:", error);
         // If backend unavailable, use initial products
         setProducts(initialProducts);
       } finally {
@@ -778,15 +785,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     [],
   );
 
-  const removeFromCart = useCallback((productId: string, size?: string, color?: string) => {
-    const key = `${productId}-${size || ""}-${color || ""}`;
-    setCart((prev) =>
-      prev.filter(
-        (item) =>
-          `${item._id}-${item.selectedSize || ""}-${item.selectedColor || ""}` !== key,
-      ),
-    );
-  }, []);
+  const removeFromCart = useCallback(
+    (productId: string, size?: string, color?: string) => {
+      const key = `${productId}-${size || ""}-${color || ""}`;
+      setCart((prev) =>
+        prev.filter(
+          (item) =>
+            `${item._id}-${item.selectedSize || ""}-${item.selectedColor || ""}` !==
+            key,
+        ),
+      );
+    },
+    [],
+  );
 
   const updateCartQuantity = useCallback(
     (productId: string, size?: string, color?: string, quantity: number) => {
@@ -795,7 +806,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         setCart((prev) =>
           prev.filter(
             (item) =>
-              `${item._id}-${item.selectedSize || ""}-${item.selectedColor || ""}` !== key,
+              `${item._id}-${item.selectedSize || ""}-${item.selectedColor || ""}` !==
+              key,
           ),
         );
         return;
@@ -955,6 +967,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
             joinedDate: new Date().toISOString(),
           };
           setCurrentUser(user);
+          return user; // Return the user so components can use it immediately
         } else {
           throw new Error("Invalid login response");
         }

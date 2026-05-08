@@ -85,9 +85,9 @@ export const ProductDetail: React.FC<{
         {/* Image Gallery */}
         <div className="space-y-4">
           {/* Main Image */}
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden relative flex items-center justify-center h-[400px] md:h-[500px] group cursor-zoom-in">
+          <div className="bg-white dark:bg-slate-800 border border-slate-100/50 dark:border-slate-700 rounded-2xl overflow-hidden relative flex items-center justify-center h-[400px] md:h-[500px] group cursor-zoom-in transition-colors">
             {!imgLoaded && (
-              <div className="absolute inset-0 bg-slate-100 animate-pulse rounded-2xl" />
+              <div className="absolute inset-0 bg-slate-100 dark:bg-slate-700 animate-pulse rounded-2xl" />
             )}
             <img
               src={product.images[selectedImageIndex] || product.images[0]}
@@ -129,8 +129,8 @@ export const ProductDetail: React.FC<{
                   onClick={() => setSelectedImageIndex(index)}
                   className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
                     selectedImageIndex === index
-                      ? "border-brand-500 shadow-md shadow-brand-500/20"
-                      : "border-slate-200 hover:border-slate-300"
+                      ? "border-brand-500 dark:border-brand-400 shadow-md shadow-brand-500/20 dark:shadow-brand-900/30"
+                      : "border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600"
                   }`}
                 >
                   <img
@@ -149,52 +149,52 @@ export const ProductDetail: React.FC<{
         </div>
 
         {/* Product Info */}
-        <div className="flex flex-col">
-          <span className="text-xs font-bold uppercase tracking-widest text-brand-500 mb-2">
+        <div className="flex flex-col bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 transition-colors border border-slate-100/50 dark:border-slate-700">
+          <span className="text-xs font-bold uppercase tracking-widest text-brand-500 dark:text-brand-400 mb-2">
             {product.category}{" "}
             {product.subcategory ? `› ${product.subcategory}` : ""}
           </span>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4 leading-tight">
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-4 leading-tight">
             {product.name}
           </h1>
 
           {/* Rating */}
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex items-center gap-1 bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200">
-              <Star className="w-4 h-4 text-amber-500 fill-current" />
-              <span className="text-sm font-bold text-amber-700">
+          <div className="flex items-center gap-3 mb-6 flex-wrap">
+            <div className="flex items-center gap-1 bg-amber-50 dark:bg-amber-900/20 px-2.5 py-1 rounded-lg border border-amber-200 dark:border-amber-900/50">
+              <Star className="w-4 h-4 text-amber-500 dark:text-amber-400 fill-current" />
+              <span className="text-sm font-bold text-amber-700 dark:text-amber-300">
                 {product.rating}
               </span>
             </div>
-            <span className="text-sm text-slate-500">
+            <span className="text-sm text-slate-600 dark:text-slate-400">
               ({reviewsList.length} reviews)
             </span>
-            <span className="text-slate-300">|</span>
+            <span className="text-slate-300 dark:text-slate-600">|</span>
             <span
-              className={`text-sm font-medium ${product.stock > 0 ? "text-emerald-600" : "text-rose-500"}`}
+              className={`text-sm font-medium ${product.stock > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-500 dark:text-rose-400"}`}
             >
               {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
             </span>
           </div>
 
           {/* Price */}
-          <div className="flex items-baseline gap-3 mb-6">
-            <span className="text-3xl font-extrabold text-slate-900">
+          <div className="flex items-baseline gap-3 mb-6 flex-wrap">
+            <span className="text-3xl font-extrabold text-slate-900 dark:text-white">
               ₹{product.price.toFixed(2)}
             </span>
             {product.originalPrice && (
               <>
-                <span className="text-lg text-slate-400 line-through">
+                <span className="text-lg text-slate-500 dark:text-slate-400 line-through">
                   ₹{product.originalPrice.toFixed(2)}
                 </span>
-                <span className="text-sm font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
+                <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-2 py-0.5 rounded-md">
                   Save ₹{(product.originalPrice - product.price).toFixed(2)}
                 </span>
               </>
             )}
           </div>
 
-          <p className="text-slate-600 text-base leading-relaxed mb-6">
+          <p className="text-slate-600 dark:text-slate-300 text-base leading-relaxed mb-6">
             {product.description}
           </p>
 
@@ -214,8 +214,8 @@ export const ProductDetail: React.FC<{
                     onClick={() => setSelectedSize(size)}
                     className={`min-w-[48px] h-12 px-4 py-2 rounded-xl text-sm font-bold border-2 transition-all duration-200 focus-ring ${
                       selectedSize === size
-                        ? "border-brand-500 bg-brand-50 text-brand-700 shadow-md shadow-brand-500/20"
-                        : "border-slate-200 text-slate-600 hover:border-brand-300 hover:bg-brand-50/50"
+                        ? "border-brand-500 dark:border-brand-400 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 shadow-md shadow-brand-500/20 dark:shadow-brand-900/20"
+                        : "border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-300 dark:hover:border-brand-700 hover:bg-brand-50/50 dark:hover:bg-brand-900/10"
                     }`}
                   >
                     {size}
@@ -228,9 +228,9 @@ export const ProductDetail: React.FC<{
           {/* Colors */}
           {product.colors && product.colors.length > 0 && (
             <div className="mb-8">
-              <label className="block text-sm font-semibold text-slate-700 mb-3">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-200 mb-3">
                 Color:{" "}
-                <span className="font-bold text-brand-600">
+                <span className="font-bold text-brand-600 dark:text-brand-400">
                   {selectedColor || "Select color"}
                 </span>
               </label>
@@ -241,8 +241,8 @@ export const ProductDetail: React.FC<{
                     onClick={() => setSelectedColor(color)}
                     className={`px-6 py-3 rounded-xl text-sm font-bold border-2 transition-all duration-200 focus-ring ${
                       selectedColor === color
-                        ? "border-brand-500 bg-brand-50 text-brand-700 shadow-md shadow-brand-500/20"
-                        : "border-slate-200 text-slate-600 hover:border-brand-300 hover:bg-brand-50/50"
+                        ? "border-brand-500 dark:border-brand-400 bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-300 shadow-md shadow-brand-500/20 dark:shadow-brand-900/20"
+                        : "border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-brand-300 dark:hover:border-brand-700 hover:bg-brand-50/50 dark:hover:bg-brand-900/10"
                     }`}
                   >
                     {color}
@@ -253,28 +253,28 @@ export const ProductDetail: React.FC<{
           )}
 
           {/* Guarantees */}
-          <div className="flex flex-wrap gap-4 text-xs font-medium text-slate-500 mb-8 border-y border-slate-100 py-4">
+          <div className="flex flex-wrap gap-4 text-xs font-medium text-slate-600 dark:text-slate-400 mb-8 border-y border-slate-200 dark:border-slate-700 py-4">
             <div className="flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-brand-500" />
+              <ShieldCheck className="w-4 h-4 text-brand-500 dark:text-brand-400" />
               <span>Quality Guaranteed</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <Truck className="w-4 h-4 text-brand-500" />
+              <Truck className="w-4 h-4 text-brand-500 dark:text-brand-400" />
               <span>Free shipping over ₹5000</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <RefreshCw className="w-4 h-4 text-brand-500" />
+              <RefreshCw className="w-4 h-4 text-brand-500 dark:text-brand-400" />
               <span>30-day returns</span>
             </div>
           </div>
 
           {/* Add to Cart */}
-          <div className="bg-slate-50 border border-slate-100 rounded-xl p-5">
+          <div className="bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-700 rounded-xl p-5">
             <div className="flex items-center gap-4">
-              <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-white">
+              <div className="flex items-center border border-slate-100/50 dark:border-slate-600 rounded-xl overflow-hidden bg-white dark:bg-slate-700">
                 <button
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="px-4 py-3 text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors"
+                  className="px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
                 >
                   <Minus className="w-4 h-4" />
                 </button>
@@ -285,7 +285,7 @@ export const ProductDetail: React.FC<{
                   onClick={() =>
                     setQuantity((q) => Math.min(product.stock, q + 1))
                   }
-                  className="px-4 py-3 text-slate-500 hover:text-slate-800 hover:bg-slate-50 transition-colors"
+                  className="px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -294,7 +294,7 @@ export const ProductDetail: React.FC<{
               <button
                 disabled={product.stock === 0}
                 onClick={handleAddToCart}
-                className="flex-1 py-3 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-bold rounded-xl shadow-lg shadow-brand-500/25 transition-all flex items-center justify-center gap-2"
+                className="flex-1 py-3 bg-brand-600 hover:bg-brand-700 dark:bg-brand-700 dark:hover:bg-brand-600 disabled:opacity-50 text-white font-bold rounded-xl shadow-lg shadow-brand-500/25 dark:shadow-brand-900/40 transition-all flex items-center justify-center gap-2"
               >
                 <ShoppingCart className="w-5 h-5" /> Add to Cart
               </button>
@@ -304,19 +304,19 @@ export const ProductDetail: React.FC<{
       </div>
 
       {/* Reviews */}
-      <div className="mt-16 border-t border-slate-200 pt-12">
-        <h2 className="text-2xl font-bold text-slate-900 mb-8">
+      <div className="mt-16 border-t border-slate-200 dark:border-slate-700 pt-12">
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-8">
           Customer Reviews
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Review Form */}
-          <div className="bg-white border border-slate-200 rounded-xl p-6 h-fit shadow-sm">
-            <h3 className="text-lg font-bold text-slate-900 mb-4">
+          <div className="bg-white dark:bg-slate-800 border border-slate-100/50 dark:border-slate-700 rounded-xl p-6 h-fit shadow-sm transition-colors">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
               Write a Review
             </h3>
             <form onSubmit={handleAddReview}>
               <div className="mb-4">
-                <label className="block text-xs font-semibold text-slate-600 mb-2">
+                <label className="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-2">
                   Your Rating
                 </label>
                 <div className="flex gap-1">
@@ -325,7 +325,7 @@ export const ProductDetail: React.FC<{
                       key={star}
                       type="button"
                       onClick={() => setRatingVal(star)}
-                      className={`text-xl transition-colors ${star <= ratingVal ? "text-amber-400" : "text-slate-300"}`}
+                      className={`text-xl transition-colors ${star <= ratingVal ? "text-amber-400" : "text-slate-300 dark:text-slate-600"}`}
                     >
                       ★
                     </button>

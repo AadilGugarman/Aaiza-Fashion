@@ -32,15 +32,15 @@ export const Cart: React.FC<{ setCurrentTab: (t: string) => void }> = ({
 
   if (cart.length === 0) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center px-4 py-24 animate-fade-in">
-        <div className="text-center">
-          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-400">
+        <div className="min-h-[60vh] flex items-center justify-center px-4 py-24 animate-fade-in bg-gradient-to-br from-slate-50 via-white to-slate-50 dark:bg-slate-950 transition-colors">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-slate-100/50 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 text-slate-400 dark:text-slate-500">
             <ShoppingCart className="w-10 h-10" />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-3">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">
             Your cart is empty
           </h2>
-          <p className="text-slate-500 mb-8 max-w-sm mx-auto">
+          <p className="text-slate-500 dark:text-slate-400 mb-8 max-w-sm mx-auto">
             Discover our curated collections and find something you love.
           </p>
           <button
@@ -58,18 +58,18 @@ export const Cart: React.FC<{ setCurrentTab: (t: string) => void }> = ({
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 animate-fade-in">
-      <h1 className="text-2xl font-bold text-slate-900 mb-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 animate-fade-in bg-white dark:bg-slate-950 transition-colors min-h-screen">
+      <h1 className="text-2xl font-bold text-slate-900 dark:text-white mb-8">
         Shopping Cart{" "}
-        <span className="text-slate-400 font-normal text-lg">
+        <span className="text-slate-500 dark:text-slate-400 font-normal text-lg">
           ({cart.length} items)
         </span>
       </h1>
 
       {savings > 0 && (
-        <div className="mb-6 flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3">
-          <Tag className="w-5 h-5 text-emerald-600 shrink-0" />
-          <p className="text-sm text-emerald-700 font-medium">
+        <div className="mb-6 flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-900/50 rounded-xl px-4 py-3">
+          <Tag className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <p className="text-sm text-emerald-700 dark:text-emerald-300 font-medium">
             You're saving{" "}
             <span className="font-bold">₹{savings.toFixed(2)}</span> on this
             order!
@@ -83,12 +83,12 @@ export const Cart: React.FC<{ setCurrentTab: (t: string) => void }> = ({
           {cart.map((item) => (
             <div
               key={`${item._id}-${item.selectedSize}-${item.selectedColor}`}
-              className="flex items-center gap-4 bg-white border border-slate-200 p-4 rounded-xl shadow-sm"
+              className="flex items-center gap-4 bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 p-4 rounded-xl shadow-sm transition-colors"
             >
               <img
                 src={item.images[0]}
                 alt={item.name}
-                className="w-24 h-24 object-cover rounded-lg bg-slate-100 shrink-0"
+                className="w-24 h-24 object-cover rounded-lg bg-slate-100 dark:bg-slate-700 shrink-0"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src =
                     "https://placehold.co/100x100/f1f5f9/94a3b8?text=Aaiza";
@@ -96,26 +96,26 @@ export const Cart: React.FC<{ setCurrentTab: (t: string) => void }> = ({
               />
 
               <div className="flex-1 min-w-0">
-                <span className="text-[10px] uppercase tracking-wider text-brand-500 font-bold block mb-1">
+                <span className="text-[10px] uppercase tracking-wider text-brand-500 dark:text-brand-400 font-bold block mb-1">
                   {item.category}
                 </span>
-                <h4 className="font-bold text-slate-900 text-sm truncate">
+                <h4 className="font-bold text-slate-900 dark:text-white text-sm truncate">
                   {item.name}
                 </h4>
                 {(item.selectedSize || item.selectedColor) && (
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                     {item.selectedSize && `Size: ${item.selectedSize}`}
                     {item.selectedSize && item.selectedColor && " • "}
                     {item.selectedColor && `Color: ${item.selectedColor}`}
                   </p>
                 )}
-                <p className="text-sm font-bold text-slate-900 mt-1">
+                <p className="text-sm font-bold text-slate-900 dark:text-white mt-1">
                   ₹{item.price.toFixed(2)}
                 </p>
               </div>
 
               {/* Quantity */}
-              <div className="flex items-center border border-slate-200 bg-slate-50 rounded-lg overflow-hidden shrink-0">
+              <div className="flex items-center border-2 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-700 rounded-lg overflow-hidden shrink-0">
                 <button
                   onClick={() =>
                     updateCartQuantity(
@@ -125,11 +125,11 @@ export const Cart: React.FC<{ setCurrentTab: (t: string) => void }> = ({
                       item.quantity - 1,
                     )
                   }
-                  className="px-3 py-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors"
+                  className="px-3 py-1.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 hover:text-slate-800 dark:hover:text-white transition-colors"
                 >
                   <Minus className="w-4 h-4" />
                 </button>
-                <span className="px-3 text-sm font-bold text-slate-900 min-w-[32px] text-center">
+                <span className="px-3 text-sm font-bold text-slate-900 dark:text-white min-w-[32px] text-center">
                   {item.quantity}
                 </span>
                 <button
@@ -141,7 +141,7 @@ export const Cart: React.FC<{ setCurrentTab: (t: string) => void }> = ({
                       item.quantity + 1,
                     )
                   }
-                  className="px-3 py-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-800 transition-colors"
+                  className="px-3 py-1.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-600 hover:text-slate-800 dark:hover:text-white transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -149,7 +149,7 @@ export const Cart: React.FC<{ setCurrentTab: (t: string) => void }> = ({
 
               {/* Line Total */}
               <div className="text-right shrink-0 hidden sm:block">
-                <span className="font-bold text-slate-900">
+                <span className="font-bold text-slate-900 dark:text-white">
                   ₹{(item.price * item.quantity).toFixed(2)}
                 </span>
               </div>
@@ -184,20 +184,24 @@ export const Cart: React.FC<{ setCurrentTab: (t: string) => void }> = ({
 
         {/* Order Summary */}
         <div className="lg:col-span-1">
-          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm sticky top-24">
-            <h3 className="text-lg font-bold text-slate-900 mb-6">
+          <div className="bg-white dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-700 rounded-xl p-6 shadow-sm sticky top-24 transition-colors">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-6">
               Order Summary
             </h3>
 
-            <div className="space-y-3 border-b border-slate-100 pb-4 mb-4">
+            <div className="space-y-3 border-b border-slate-200 dark:border-slate-700 pb-4 mb-4">
               <div className="flex justify-between text-sm">
-                <span className="text-slate-500">Subtotal</span>
-                <span className="text-slate-800 font-semibold">
+                <span className="text-slate-500 dark:text-slate-400">
+                  Subtotal
+                </span>
+                <span className="text-slate-800 dark:text-white font-semibold">
                   ₹{subtotal.toFixed(2)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
-                <span className="text-slate-500">GST (18%)</span>
+                <span className="text-slate-500 dark:text-slate-400">
+                  GST (18%)
+                </span>
                 <span className="text-slate-800 font-semibold">
                   ₹{tax.toFixed(2)}
                 </span>
